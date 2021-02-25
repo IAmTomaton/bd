@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DB.Client.Http\DB.Client.Http.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Vostok.Logging.Console" Version="1.0.5" />
+      <PackageReference Include="Vostok.Logging.File" Version="1.0.12" />
+      <PackageReference Include="Vostok.Logging.Tracing" Version="0.1.5" />
+      <PackageReference Include="Vostok.Tracing" Version="0.1.1" />
+    </ItemGroup>
+
+</Project>

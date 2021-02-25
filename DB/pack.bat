@@ -1,0 +1,1 @@
+dotnet run -c Release -p Packer\Packer.csproj -- DB.Core DB.Application.Core DB.Client.Core

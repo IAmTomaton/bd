@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Vostok.ClusterClient.Core" Version="0.1.23" />
+      <PackageReference Include="Vostok.ClusterClient.Tracing" Version="0.1.4" />
+      <PackageReference Include="Vostok.ClusterClient.Transport" Version="0.1.17" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DB.Client.Core\DB.Client.Core.csproj" />
+    </ItemGroup>
+
+</Project>

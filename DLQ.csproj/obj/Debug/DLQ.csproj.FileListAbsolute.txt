@@ -1,0 +1,2 @@
+E:\Projects\testOvoe\DLQ.csproj\obj\Debug\DLQ.csprojAssemblyReference.cache
+E:\Projects\testOvoe\DLQ.csproj\obj\Debug\DLQ.csproj.CoreCompileInputs.cache

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <OutputType>exe</OutputType>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="Vostok.Logging.Console" Version="1.0.5" />
+      <PackageReference Include="Vostok.Logging.Microsoft" Version="2.0.11" />
+      <PackageReference Include="Vostok.Logging.Tracing" Version="0.1.5" />
+      <PackageReference Include="Vostok.Tracing" Version="0.1.1" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\DB.Application.Core\DB.Application.Core.csproj" />
+    </ItemGroup>
+
+</Project>

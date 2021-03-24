@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Dynamic;
 
 namespace Outsourcing
 {
-    [Route("/cars")]
+    [Route("/cars-api/v1/cars")]
     public class Program : Controller
     {
         private ICarService carService;
@@ -56,6 +55,8 @@ namespace Outsourcing
         private readonly double maxWeight = 1000;
         private readonly double minWeight = 0;
 
+        private int nextId;
+
         public CarService(ICarRepository repository)
         {
             this.repository = repository;
@@ -83,7 +84,7 @@ namespace Outsourcing
 
             var car = new Car
             {
-                Id = "1",
+                Id = nextId++.ToString(),
                 Mark = request.Mark,
                 Model = request.Model,
                 Name = request.Name,

@@ -25,6 +25,13 @@ namespace DB.Core.Commands.Find
                 return Result.Ok.WithContent(Array.Empty<object>());
             }
 
+            if (state.Indexes.TryGetValue(collectionName, out var fields) &&
+                fields.TryGetValue(field, out var values) &&
+                values.TryGetValue(value, out var documents))
+            {
+                return Result.Ok.WithContent(documents.Select(id => GetJObject(id, collection[id])));
+            }
+
             return Result.Ok.WithContent(
                 collection.Where(document => document.Value.TryGetValue(field, out var docValue) && docValue == value)
                     .Select(kvp => GetJObject(kvp.Key, kvp.Value))

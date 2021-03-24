@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Linq;
 using DB.Core.Helpers;
 using DB.Core.State;
@@ -36,8 +37,26 @@ namespace DB.Core.Commands.Delete
                 return Result.Error.NotFound;
             }
 
-            collection.TryRemove(id, out _);
+            collection.TryRemove(id, out var document);
+
+            DeleteDocumentFromIndexes(state, collectionName, id, document);
+
             return Result.Ok.Empty;
+        }
+
+        private void DeleteDocumentFromIndexes(IDbState state, string collectionName, string id, ConcurrentDictionary<string, string> document)
+        {
+            if (state.Indexes.TryGetValue(collectionName, out var fields))
+            {
+                foreach (var kvp in document)
+                {
+                    if (!fields.TryGetValue(kvp.Key, out var values))
+                        continue;
+                    if (!values.TryGetValue(kvp.Value, out var documents))
+                        continue;
+                    documents.Remove(id);
+                }
+            }
         }
     }
 }

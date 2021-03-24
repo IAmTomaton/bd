@@ -10,6 +10,8 @@ using DB.Core.Parsing;
 using DB.Core.State;
 using DB.Core.Validation;
 using DB.Core.Commands.Restore;
+using DB.Core.Commands.Update;
+using DB.Core.Commands.Indexes;
 
 namespace DB.Application.Core
 {
@@ -29,7 +31,14 @@ namespace DB.Application.Core
                 }),
                 new DeleteCommand(),
                 new BackupCommand(),
-                new RestoreCommand(new RestoreCommandParser(validator))
+                new RestoreCommand(new RestoreCommandParser(validator)),
+                new UpdateCommand(new UpdateCommandParser(), new IUpdateCommandExecutor[]
+                {
+                    new SetCommandExecutor(),
+                    new UnsetCommandExecutor()
+                }),
+                new AddIndexCommand(),
+                new DropIndexCommand()
             };
             var parser = new DbCommandParser();
             var state = new DbState();

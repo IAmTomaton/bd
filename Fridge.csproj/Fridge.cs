@@ -18,6 +18,21 @@ namespace Fridge
 
         public void RunAlgo(string input)
         {
+            (List<Shelve> shelves, Dictionary<int, int> productCounts) = ParseInput(input);
+
+            var sortedShelvesBySize = shelves.OrderBy(shelve => shelve.Size);
+            foreach (var product in productCounts.OrderBy(pair => pair.Value))
+            {
+                var shelve = sortedShelvesBySize.First(shelve => shelve.Size >= product.Value && !shelve.Used);
+                shelve.Used = true;
+                shelve.Product = product.Key;
+            }
+
+            _writer.Write(BuildOutput(shelves, productCounts));
+        }
+
+        private (List<Shelve> shelves, Dictionary<int, int> productCounts) ParseInput(string input)
+        {
             var lines = input.Split('\n');
             var shelvesCount = int.Parse(lines[0]);
             var shelves = new List<Shelve>();
@@ -36,28 +51,30 @@ namespace Fridge
                 for (var j = 0; j < shelve.Height; j++)
                 {
                     index++;
-                    foreach (var product in lines[index].Split(' '))
-                    {
-                        if (product == "-")
-                            continue;
-                        var productNumber = int.Parse(product);
-                        if (!productCounts.ContainsKey(productNumber))
-                            productCounts.Add(productNumber, 0);
-                        productCounts[productNumber]++;
-                    }
+                    ParseLine(lines[index], productCounts);
                 }
                 index++;
             }
 
-            var output = new StringBuilder();
+            return (shelves, productCounts);
+        }
 
-            var sortedShelvesBySize = shelves.OrderBy(shelve => shelve.Size);
-            foreach (var product in productCounts.OrderBy(pair => pair.Value))
+        private void ParseLine(string line, Dictionary<int, int> productCounts)
+        {
+            foreach (var product in line.Split(' '))
             {
-                var shelve = sortedShelvesBySize.First(shelve => shelve.Size >= product.Value && !shelve.Used);
-                shelve.Used = true;
-                shelve.Product = product.Key;
+                if (product == "-")
+                    continue;
+                var productNumber = int.Parse(product);
+                if (!productCounts.ContainsKey(productNumber))
+                    productCounts.Add(productNumber, 0);
+                productCounts[productNumber]++;
             }
+        }
+
+        private string BuildOutput(List<Shelve> shelves, Dictionary<int, int> productCounts)
+        {
+            var output = new StringBuilder();
 
             var sortedShelvesByProduct = shelves.OrderBy(shelve => shelve.Product);
             var first = true;
@@ -66,24 +83,10 @@ namespace Fridge
                 if (!first)
                     output.Append('\n');
                 first = false;
-                for (var y = 0; y < shelve.Height; y++)
-                {
-                    for (var x = 0; x < shelve.Width; x++)
-                    {
-                        if (x != 0) output.Append(' ');
-                        if (productCounts[shelve.Product] > 0)
-                        {
-                            output.Append(shelve.Product);
-                            productCounts[shelve.Product]--;
-                        }
-                        else
-                            output.Append('-');
-                    }
-                    output.Append('\n');
-                }
+                output.Append(shelve.ToOutputString(productCounts));
             }
 
-            _writer.Write(output.ToString());
+            return output.ToString();
         }
 
         private class Shelve
@@ -94,6 +97,36 @@ namespace Fridge
             public int Product { get; set; }
 
             public int Size => Height * Width;
+
+            public string ToOutputString(Dictionary<int, int> productCounts)
+            {
+                var output = new StringBuilder();
+                for (var y = 0; y < Height; y++)
+                {
+                    output.Append(GetLine(productCounts));
+                    output.Append('\n');
+                }
+
+                return output.ToString();
+            }
+
+            private string GetLine(Dictionary<int, int> productCounts)
+            {
+                var output = new StringBuilder();
+                for (var x = 0; x < Width; x++)
+                {
+                    if (x != 0) output.Append(' ');
+                    if (productCounts[Product] > 0)
+                    {
+                        output.Append(Product);
+                        productCounts[Product]--;
+                    }
+                    else
+                        output.Append('-');
+                }
+
+                return output.ToString();
+            }
         }
     }
 }

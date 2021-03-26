@@ -46,10 +46,26 @@ namespace DB.Core.Commands.Insert
             {
                 foreach (var fieldValuePair in document)
                 {
-                    if (!fields.TryGetValue(fieldValuePair.Key, out var values))
+                    if (!document.TryGetValue(fieldValuePair.Key, out var value))
                         continue;
-                    var documents = values.GetOrAdd(fieldValuePair.Value, _ => new List<string>());
-                    documents.Add(id);
+                    if (!fields.TryGetValue(fieldValuePair.Key, out var valuesDocuments))
+                        continue;
+
+                    var values = valuesDocuments.Item1;
+                    var documents = valuesDocuments.Item2;
+
+                    var indexToAdd = values.FindLastIndex(docValue => string.Compare(docValue, value) < 0);
+
+                    if (indexToAdd == values.Count)
+                    {
+                        values.Add(value);
+                        documents.Add(id);
+                        continue;
+                    }
+
+                    indexToAdd++;
+                    values.Insert(indexToAdd, value);
+                    documents.Insert(indexToAdd, id);
                 }
             }
         }

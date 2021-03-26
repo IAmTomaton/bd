@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using DB.Core.Helpers;
@@ -50,11 +51,15 @@ namespace DB.Core.Commands.Delete
             {
                 foreach (var kvp in document)
                 {
-                    if (!fields.TryGetValue(kvp.Key, out var values))
+                    if (!fields.TryGetValue(kvp.Key, out var valuesDocuments))
                         continue;
-                    if (!values.TryGetValue(kvp.Value, out var documents))
-                        continue;
-                    documents.Remove(id);
+
+                    var values = valuesDocuments.Item1;
+                    var documents = valuesDocuments.Item2;
+
+                    var indexToDelete = documents.BinarySearch(id);
+                    values.RemoveAt(indexToDelete);
+                    documents.RemoveAt(indexToDelete);
                 }
             }
         }

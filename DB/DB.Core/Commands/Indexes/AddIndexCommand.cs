@@ -1,6 +1,7 @@
 ﻿using DB.Core.Helpers;
 using DB.Core.State;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,32 +25,35 @@ namespace DB.Core.Commands.Indexes
 
             var field = property.Value.ToObject<string>();
 
-            state.Indexes.TryAdd(collectionName, new ConcurrentDictionary<string, ConcurrentDictionary<string, List<string>>>());
+            var collectionIndexes = state.Indexes.GetOrAdd(collectionName, new ConcurrentDictionary<string, Tuple<List<string>, List<string>>>());
 
-            if (state.Indexes[collectionName].ContainsKey(field))
+            if (collectionIndexes.ContainsKey(field))
                 return Result.Error.AlreadyExists;
 
-            state.Indexes[collectionName].TryAdd(field, new ConcurrentDictionary<string, List<string>>());
+            collectionIndexes.TryAdd(field, new Tuple<List<string>, List<string>>(new List<string>(), new List<string>()));
 
             if (state.Collections.TryGetValue(collectionName, out var collection))
                 foreach (var idDocumentPair in collection)
-                    AddDocumentInIndexes(state, collectionName, idDocumentPair.Key, idDocumentPair.Value);
+                    AddDocumentInIndex(state, collectionName, idDocumentPair.Key, idDocumentPair.Value, field);
 
             return Result.Ok.Empty;
         }
 
-        private void AddDocumentInIndexes(IDbState state, string collectionName, string id, ConcurrentDictionary<string, string> document)
+        private void AddDocumentInIndex(IDbState state, string collectionName, string id, ConcurrentDictionary<string, string> document, string field)
         {
-            if (state.Indexes.TryGetValue(collectionName, out var fields))
-            {
-                foreach (var fieldValuePair in document)
-                {
-                    if (!fields.TryGetValue(fieldValuePair.Key, out var values))
-                        continue;
-                    var documents = values.GetOrAdd(fieldValuePair.Value, _ => new List<string>());
-                    documents.Add(id);
-                }
-            }
+            if (!document.TryGetValue(field, out var value))
+                return;
+            if (!state.Indexes.TryGetValue(collectionName, out var fields))
+                return;
+            if (!fields.TryGetValue(collectionName, out var valuesDocuments))
+                return;
+
+            var values = valuesDocuments.Item1;
+            var documents = valuesDocuments.Item2;
+
+            var indexToAdd = values.FindIndex(v => v == value);
+            values.Insert(indexToAdd, value);
+            documents.Insert(indexToAdd, id);
         }
     }
 }

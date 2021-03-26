@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using DB.Core.Helpers;
@@ -41,6 +42,8 @@ namespace DB.Core.Commands.Replace
 
             AddDocumentInIndexes(state, collectionName, id, document);
 
+            throw new Exception("eba r");
+
             return Result.Ok.Empty;
         }
 
@@ -48,13 +51,17 @@ namespace DB.Core.Commands.Replace
         {
             if (state.Indexes.TryGetValue(collectionName, out var fields))
             {
-                foreach (var kvp in document)
+                foreach (var fieldValuePair in document)
                 {
-                    if (!fields.TryGetValue(kvp.Key, out var values))
+                    if (!fields.TryGetValue(fieldValuePair.Key, out var valuesDocuments))
                         continue;
-                    if (!values.TryGetValue(kvp.Value, out var documents))
-                        continue;
-                    documents.Remove(id);
+
+                    var values = valuesDocuments.Item1;
+                    var documents = valuesDocuments.Item2;
+
+                    var indexToRemove = documents.FindIndex(docId => docId == id);
+                    values.RemoveAt(indexToRemove);
+                    documents.RemoveAt(indexToRemove);
                 }
             }
         }
@@ -63,12 +70,19 @@ namespace DB.Core.Commands.Replace
         {
             if (state.Indexes.TryGetValue(collectionName, out var fields))
             {
-                foreach (var kvp in document)
+                foreach (var fieldValuePair in document)
                 {
-                    if (!fields.TryGetValue(kvp.Key, out var values))
+                    if (!document.TryGetValue(fieldValuePair.Key, out var value))
                         continue;
-                    var documents = values.GetOrAdd(kvp.Value, _ => new List<string>());
-                    documents.Add(id);
+                    if (!fields.TryGetValue(fieldValuePair.Key, out var valuesDocuments))
+                        continue;
+
+                    var values = valuesDocuments.Item1;
+                    var documents = valuesDocuments.Item2;
+
+                    var indexToAdd = values.FindIndex(docValue => docValue == value);
+                    values.Insert(indexToAdd, value);
+                    documents.Insert(indexToAdd, id);
                 }
             }
         }

@@ -23,34 +23,7 @@ namespace DB.Core.Commands.Update
             var field = bodyProperty.Name;
             var value = bodyProperty.Value.ToObject<string>();
 
-            DeleteFromIndex(state, collectionName, id, field, document);
-
             document[field] = value;
-
-            AddToIndex(state, collectionName, id, field, document);
-        }
-
-        private void DeleteFromIndex(IDbState state, string collectionName, string id, string field, ConcurrentDictionary<string, string> document)
-        {
-            if (state.Indexes.TryGetValue(collectionName, out var fields))
-            {
-                if (!fields.TryGetValue(field, out var values))
-                    return;
-                if (!values.TryGetValue(document[field], out var documents))
-                    return;
-                documents.Remove(id);
-            }
-        }
-
-        private void AddToIndex(IDbState state, string collectionName, string id, string field, ConcurrentDictionary<string, string> document)
-        {
-            if (state.Indexes.TryGetValue(collectionName, out var fields))
-            {
-                if (!fields.TryGetValue(field, out var values))
-                    return;
-                var documents = values.GetOrAdd(document[field], _ => new List<string>());
-                documents.Add(id);
-            }
         }
     }
 }

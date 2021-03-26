@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using DB.Core.Helpers;
 using DB.Core.State;
@@ -26,10 +27,25 @@ namespace DB.Core.Commands.Find
             }
 
             if (state.Indexes.TryGetValue(collectionName, out var fields) &&
-                fields.TryGetValue(field, out var values) &&
-                values.TryGetValue(value, out var documents))
+                fields.TryGetValue(field, out var valuesDocuments))
             {
-                return Result.Ok.WithContent(documents.Select(id => GetJObject(id, collection[id])));
+                var values = valuesDocuments.Item1;
+                var documents = valuesDocuments.Item2;
+
+                var index = values.BinarySearch(value);
+
+                if (index < 0)
+                    return Result.Ok.Empty;
+
+                while (index > 0 && values[index - 1] == value)
+                    index--;
+
+                var ids = new List<string>();
+                while (index < documents.Count && values[index] == value)
+                    ids.Add(documents[index]);
+                    index++;
+
+                return Result.Ok.WithContent(ids.Select(id => GetJObject(id, collection[id])));
             }
 
             return Result.Ok.WithContent(
